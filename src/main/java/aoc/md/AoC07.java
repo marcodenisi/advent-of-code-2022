@@ -11,6 +11,8 @@ public class AoC07 {
 
   private static final String FILENAME =
       "/Users/mdenisi/workspace/aoc2022/src/main/resources/input/07.txt";
+  private static final Long TOTAL_DISK = 70000000L;
+  private static final Long UNUSUED_SPACE = 30000000L;
 
   public static void main(String[] args) throws IOException {
     final var input = Files.readString(Paths.get(FILENAME));
@@ -38,13 +40,21 @@ public class AoC07 {
               }
             });
 
-    folderSizeMap.entrySet().forEach(System.out::println);
-
     System.out.println(
         folderSizeMap.values().stream()
             .filter(size -> size <= 100000L)
             .mapToLong(size -> size)
             .sum());
+
+    final var currentSpace = folderSizeMap.get("/");
+    final var neededFreeSpace = UNUSUED_SPACE - (TOTAL_DISK - currentSpace);
+
+    System.out.println(
+        folderSizeMap.values().stream()
+            .filter(size -> size >= neededFreeSpace)
+            .sorted()
+            .findFirst()
+            .get());
   }
 
   private static void handleFile(
@@ -76,8 +86,17 @@ public class AoC07 {
         case ".." ->
         // pop
         folderStack.pop();
-        default -> folderStack.push(folder);
+        default -> folderStack.push(createFolderPath(folderStack, folder));
       }
     }
+  }
+
+  private static String createFolderPath(ArrayDeque<String> folderStack, String folder) {
+    final var sb = new StringBuilder();
+    for (String f : folderStack) {
+      sb.append(f);
+    }
+    sb.append(folder);
+    return sb.toString();
   }
 }
